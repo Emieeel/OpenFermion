@@ -11,6 +11,8 @@
 #   limitations under the License.
 """Jordan-Wigner transform on fermionic operators."""
 import itertools
+from functools import partial
+import multiprocessing
 
 import numpy
 
@@ -19,6 +21,9 @@ from openfermion.ops.operators import (FermionOperator, MajoranaOperator,
 from openfermion.ops.representations import (DiagonalCoulombHamiltonian,
                                              InteractionOperator)
 from openfermion.utils.operator_utils import count_qubits
+
+import time
+
 
 
 def jordan_wigner(operator):
@@ -157,32 +162,67 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
         qubit_operator += jordan_wigner_one_body(p, q, coefficient)
 
         # Two-body
-        coefficient = (iop[(p, 1), (q, 1), (p, 0),
-                           (q, 0)] - iop[(p, 1), (q, 1), (q, 0),
-                                         (p, 0)] - iop[(q, 1), (p, 1), (p, 0),
-                                                       (q, 0)] + iop[(q, 1),
-                                                                     (p, 1),
-                                                                     (q, 0),
-                                                                     (p, 0)])
+        coefficient = (iop[(p, 1), (q, 1), (p, 0), (q, 0)] -
+                       iop[(p, 1), (q, 1), (q, 0), (p, 0)] -
+                       iop[(q, 1), (p, 1), (p, 0), (q, 0)] +
+                       iop[(q, 1), (p, 1), (q, 0), (p, 0)])
         qubit_operator += jordan_wigner_two_body(p, q, p, q, coefficient)
-
+    
+    t2 = time.time()
+   
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        starttime = time.time()
+        func = partial(multiprocess_func, iop=iop)
+        transf_terms = pool.starmap(func, itertools.combinations(
+                itertools.combinations(range(n_qubits), 2),
+                2))
+        print('pooling took {} seconds'.format(time.time() - starttime))
+        t6 = time.time()
+        pool.close()
+        print('closing pools took', time.time()-t6)
+        t5 = time.time()
+        for i in transf_terms:
+            qubit_operator += i
+        print('adding twobody terms to total took', time.time()-t5)
+        
+    print('twobody transformation took', time.time()-t2)
+    
+    
+    # t2 = time.time()
+    # loops = 0
+    # coefft = 0
+    # termt = 0
     # Transform the rest of the two-body terms
-    for (p, q), (r, s) in itertools.combinations(
-            itertools.combinations(range(n_qubits), 2), 2):
-        coefficient = 0.5 * (iop[(p, 1), (q, 1), (r, 0),
-                                 (s, 0)] + iop[(s, 1), (r, 1), (q, 0),
-                                               (p, 0)].conjugate() -
-                             iop[(p, 1), (q, 1), (s, 0),
-                                 (r, 0)] - iop[(r, 1), (s, 1), (q, 0),
-                                               (p, 0)].conjugate() -
-                             iop[(q, 1), (p, 1), (r, 0),
-                                 (s, 0)] - iop[(s, 1), (r, 1), (p, 0),
-                                               (q, 0)].conjugate() +
-                             iop[(q, 1), (p, 1), (s, 0),
-                                 (r, 0)] + iop[(r, 1), (s, 1), (p, 0),
-                                               (q, 0)].conjugate())
-        qubit_operator += jordan_wigner_two_body(p, q, r, s, coefficient)
+    # for (p, q), (r, s) in itertools.combinations(
+    #         itertools.combinations(range(n_qubits), 2), 2):
+    #     coefficient = 0.5 * (iop[(p, 1), (q, 1), (r, 0),
+    #                              (s, 0)] + iop[(s, 1), (r, 1), (q, 0),
+    #                                            (p, 0)].conjugate() -
+    #                          iop[(p, 1), (q, 1), (s, 0),
+    #                              (r, 0)] - iop[(r, 1), (s, 1), (q, 0),
+    #                                            (p, 0)].conjugate() -
+    #                          iop[(q, 1), (p, 1), (r, 0),
+    #                              (s, 0)] - iop[(s, 1), (r, 1), (p, 0),
+    #                                            (q, 0)].conjugate() +
+    #                          iop[(q, 1), (p, 1), (s, 0),
+    #                              (r, 0)] + iop[(r, 1), (s, 1), (p, 0),
+    #                                            (q, 0)].conjugate())
+    #     qubit_operator += jordan_wigner_two_body(p, q, r, s, coefficient)
+    return qubit_operator
 
+def multiprocess_func(pq,rs,iop):
+    p, q = pq
+    r, s = rs
+    coefficient = 0.5 * (
+            iop[(p, 1), (q, 1), (r, 0), (s, 0)] +
+            iop[(s, 1), (r, 1), (q, 0), (p, 0)].conjugate() -
+            iop[(p, 1), (q, 1), (s, 0), (r, 0)] -
+            iop[(r, 1), (s, 1), (q, 0), (p, 0)].conjugate() -
+            iop[(q, 1), (p, 1), (r, 0), (s, 0)] -
+            iop[(s, 1), (r, 1), (p, 0), (q, 0)].conjugate() +
+            iop[(q, 1), (p, 1), (s, 0), (r, 0)] +
+            iop[(r, 1), (s, 1), (p, 0), (q, 0)].conjugate())
+    qubit_operator = jordan_wigner_two_body(p, q, r, s, coefficient)
     return qubit_operator
 
 
