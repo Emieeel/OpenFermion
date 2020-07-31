@@ -35,3 +35,6 @@ from .weyl_ordering import (
     weyl_polynomial_quantization,
     symmetric_ordering,
 )
+
+from .calc_qubnorm import JW1norm
+
