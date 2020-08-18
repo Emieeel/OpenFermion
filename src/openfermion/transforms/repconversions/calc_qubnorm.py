@@ -126,19 +126,19 @@ def JW1norm(constant, one_body_coefficients, two_body_coefficients, normal_order
                 temp_b += two_body_coefficients[j,k,i,k]
                 q1norm += 1/2 * max(abs(two_body_coefficients[i,k,j,k]),\
                                     abs(two_body_coefficients[j,k,i,k]))
-                #print(i,k,j,k)
                 
             for k in range(j+1,i):
                 temp_a -= two_body_coefficients[i,k,k,j]
                 temp_b -= two_body_coefficients[k,j,i,k]
                 q1norm += 1/2 * max(abs(two_body_coefficients[i,k,k,j]),\
                                     abs(two_body_coefficients[k,j,i,k]))
-                #print(i,k,k,j)
+
             for k in range(i+1,n_qubits):
                 temp_a += two_body_coefficients[k,i,k,j]
                 temp_b += two_body_coefficients[k,j,k,i]
                 q1norm += 1/2 * max(abs(two_body_coefficients[k,i,k,j]),\
                                     abs(two_body_coefficients[k,j,k,i]))
-                #print(k,i,k,j)
+
             q1norm += 1/2 * max(abs(temp_a), abs(temp_b))
+
     return q1norm
