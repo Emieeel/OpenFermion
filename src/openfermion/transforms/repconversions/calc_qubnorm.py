@@ -29,7 +29,7 @@ def normal_order_tbc(two_body_coefficients, n_qubits):
     two_body_coefficients : A numpy array of size
         (n_qubits, n_qubits, n_qubits, n_qubits)
     '''
-    print("Normal ordering.....")
+    # print("Normal ordering.....")
     for i in range(n_qubits):
         for j in range(n_qubits):
             for k in range(n_qubits):
@@ -46,7 +46,7 @@ def normal_order_tbc(two_body_coefficients, n_qubits):
                         two_body_coefficients[i,j,l,k] = 0.
                         two_body_coefficients[j,i,k,l] = 0.
                         two_body_coefficients[j,i,l,k] = 0.
-    print("Done normal ordering")
+    # print("Done normal ordering")
     return two_body_coefficients
 
 def JW1norm(constant, one_body_coefficients, two_body_coefficients, normal_order=True):
