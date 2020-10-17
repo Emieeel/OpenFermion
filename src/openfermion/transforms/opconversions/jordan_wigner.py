@@ -176,16 +176,16 @@ def jordan_wigner_interaction_op(iop, n_qubits=None):
         transf_terms = pool.starmap(func, itertools.combinations(
                 itertools.combinations(range(n_qubits), 2),
                 2))
-        print('pooling took {} seconds'.format(time.time() - starttime))
+        # print('pooling took {} seconds'.format(time.time() - starttime))
         t6 = time.time()
         pool.close()
-        print('closing pools took', time.time()-t6)
+        # print('closing pools took', time.time()-t6)
         t5 = time.time()
         for i in transf_terms:
             qubit_operator += i
-        print('adding twobody terms to total took', time.time()-t5)
+        # print('adding twobody terms to total took', time.time()-t5)
         
-    print('twobody transformation took', time.time()-t2)
+    # print('twobody transformation took', time.time()-t2)
     
     
     # t2 = time.time()

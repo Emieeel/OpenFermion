@@ -36,5 +36,8 @@ from .weyl_ordering import (
     symmetric_ordering,
 )
 
-from .calc_qubnorm import JW1norm
+
+from .calc_qubnorm import (
+    JW1norm, JW1norm_sym
+)
 
