@@ -184,11 +184,21 @@ def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients, normal_o
         for q in range(n_qubits):
             htildepq[p,q] = 1/2 * one_body_coefficients[p,q]
             for r in range(n_qubits):
-                if r!=p and r!=q:
+                if r!=p and r!=q :
                     htildepq[p,q] += ((1/4 * two_body_coefficients[p,r,r,q]) - \
                                       (1/8 * two_body_coefficients[p,q,r,r]))
+    htildepq2 = 0
+    for p in range(n_qubits):
+        for q in range(n_qubits):
+            for r in range(n_qubits):
+                if  p>q and r != p and r!= q:
+                    print("bingo")
+                    htildepq2 += 1/4 * abs(two_body_coefficients[r,r,p,q] - two_body_coefficients[r,r,q,p])
+                    # htildepq2 += 1/8 * abs(two_body_coefficients[r,r,p,q] - two_body_coefficients[r,q,r,p])
     
-    q1norm = abs(htilde) + np.sum(np.absolute(htildepq))
+    print("htilde is", htilde, "htildepq is", np.sum(np.absolute(htildepq)),\
+          "htildepq2 is", abs(htildepq2))
+    q1norm = abs(htilde) + np.sum(np.absolute(htildepq)) + abs(htildepq2)
     
     for p in range(n_qubits):
         for q in range(n_qubits):
@@ -197,9 +207,9 @@ def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients, normal_o
             for r in range(n_qubits):
                 if p != q and q!= r and p!=r:
                     q1norm += 1/8 * abs(two_body_coefficients[p,q,r,q] - two_body_coefficients[p,q,q,r])
-                    for s in range(n_qubits):
-                        if p>q and r>s and p!=q and p!=r and p!=s and q!=r and q!=s and r!=s:
-                            q1norm += 1/4 * abs(two_body_coefficients[p,q,r,s] \
-                                                - two_body_coefficients[p,q,s,r])
+                for s in range(n_qubits):
+                    if p>q and r>s and p!=q and p!=r and p!=s and q!=r and q!=s and r!=s:
+                        q1norm += 1/4 * abs(two_body_coefficients[p,q,r,s] \
+                                            - two_body_coefficients[p,q,s,r])
     return q1norm
             

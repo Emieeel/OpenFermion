@@ -929,8 +929,14 @@ class MolecularData(object):
 
         # Cast to InteractionOperator class and return.
         molecular_hamiltonian = reps.InteractionOperator(
+<<<<<<< HEAD
             constant, one_body_coefficients, 1 / 2 * two_body_coefficients)
 
+=======
+            constant, one_body_coefficients, two_body_coefficients)
+        print("has to be true:",numpy.allclose(two_body_coefficients, \
+                                            molecular_hamiltonian.two_body_tensor))
+>>>>>>> 9db6da5... some changes to be reversed I think
         return molecular_hamiltonian
 
     def get_molecular_rdm(self, use_fci=False):
