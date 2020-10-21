@@ -30,7 +30,7 @@ def normal_order_tbc(two_body_coefficients, n_qubits):
     two_body_coefficients : A numpy array of size
         (n_qubits, n_qubits, n_qubits, n_qubits)
     '''
-    # print("Normal ordering.....")
+    print("Normal ordering.....")
     for i in range(n_qubits):
         for j in range(n_qubits):
             for k in range(n_qubits):
@@ -47,7 +47,7 @@ def normal_order_tbc(two_body_coefficients, n_qubits):
                         two_body_coefficients[i,j,l,k] = 0.
                         two_body_coefficients[j,i,k,l] = 0.
                         two_body_coefficients[j,i,l,k] = 0.
-    # print("Done normal ordering")
+    print("Done normal ordering")
     return two_body_coefficients
 
 def JW1norm(constant, one_body_coefficients, two_body_coefficients, normal_order=True):
@@ -144,7 +144,7 @@ def JW1norm(constant, one_body_coefficients, two_body_coefficients, normal_order
 
     return q1norm
 
-def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients, normal_order=False):
+def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients_inp, normal_order=False):
     '''
     Returns the 1-Norm of the Hamiltonian after a Jordan-Wigner
     transformation given normal ordered one-body (2D np.array)
@@ -168,8 +168,10 @@ def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients, normal_o
     '''
     n_qubits = one_body_coefficients.shape[0]
     if normal_order:
-        two_body_coefficients = normal_order_tbc(two_body_coefficients, n_qubits)
-        
+        two_body_coefficients = normal_order_tbc(two_body_coefficients_inp, n_qubits)
+    else:
+        two_body_coefficients = 2*np.copy(two_body_coefficients_inp)
+    
 
     
     htilde = constant
@@ -187,29 +189,23 @@ def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients, normal_o
                 if r!=p and r!=q :
                     htildepq[p,q] += ((1/4 * two_body_coefficients[p,r,r,q]) - \
                                       (1/8 * two_body_coefficients[p,q,r,r]))
-    htildepq2 = 0
-    for p in range(n_qubits):
-        for q in range(n_qubits):
-            for r in range(n_qubits):
-                if  p>q and r != p and r!= q:
-                    print("bingo")
-                    htildepq2 += 1/4 * abs(two_body_coefficients[r,r,p,q] - two_body_coefficients[r,r,q,p])
-                    # htildepq2 += 1/8 * abs(two_body_coefficients[r,r,p,q] - two_body_coefficients[r,q,r,p])
     
-    print("htilde is", htilde, "htildepq is", np.sum(np.absolute(htildepq)),\
-          "htildepq2 is", abs(htildepq2))
-    q1norm = abs(htilde) + np.sum(np.absolute(htildepq)) + abs(htildepq2)
-    
+    print("htilde is", htilde, "htildepq is", np.sum(np.absolute(htildepq)))
+    q1norm1 = abs(htilde) + np.sum(np.absolute(htildepq)) 
+    q1norm2 = 0
     for p in range(n_qubits):
         for q in range(n_qubits):
             if p != q:
-                q1norm += 1/16 * abs(two_body_coefficients[p,q,p,q]-two_body_coefficients[p,q,q,p])
+                q1norm2 += 1/16 * abs(two_body_coefficients[p,q,p,q]-2*two_body_coefficients[p,q,q,p])
             for r in range(n_qubits):
                 if p != q and q!= r and p!=r:
-                    q1norm += 1/8 * abs(two_body_coefficients[p,q,r,q] - two_body_coefficients[p,q,q,r])
+                    q1norm2 += 1/8 * abs((two_body_coefficients[p,q,r,q]) - \
+                                         (2 * two_body_coefficients[p,q,q,r]))
                 for s in range(n_qubits):
                     if p>q and r>s and p!=q and p!=r and p!=s and q!=r and q!=s and r!=s:
-                        q1norm += 1/4 * abs(two_body_coefficients[p,q,r,s] \
+                        q1norm2 += 1/4 * abs(two_body_coefficients[p,q,r,s] \
                                             - two_body_coefficients[p,q,s,r])
+    print("q1norm2 is",q1norm2)
+    q1norm = q1norm1 + q1norm2
     return q1norm
             
