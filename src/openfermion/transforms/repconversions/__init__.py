@@ -37,7 +37,4 @@ from .weyl_ordering import (
 )
 
 
-from .calc_qubnorm import (
-    JW1norm, JW1norm_sym
-)
 

@@ -11,3 +11,8 @@
 #   limitations under the License.
 
 from .contextuality import is_contextual
+
+
+from .calc_qubnorm import (
+    JW1norm, JW1norm_sym
+)
