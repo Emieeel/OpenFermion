@@ -50,7 +50,7 @@ def normal_order_tbc(two_body_coefficients, n_qubits):
     print("Done normal ordering")
     return two_body_coefficients
 
-def JW1norm_nosym(constant, one_body_coefficients, two_body_coefficients, normal_order=True):
+def JW1norm(constant, one_body_coefficients, two_body_coefficients, normal_order=True):
     '''
     Returns the 1-Norm of the Hamiltonian after a Jordan-Wigner
     transformation given normal ordered one-body (2D np.array)
@@ -144,7 +144,7 @@ def JW1norm_nosym(constant, one_body_coefficients, two_body_coefficients, normal
 
     return q1norm
 
-def JW1norm(constant, one_body_coefficients, two_body_coefficients_inp, normal_order=False):
+def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients_inp, normal_order=False):
     '''
     Returns the 1-Norm of the Hamiltonian after a Jordan-Wigner
     transformation given normal ordered one-body (2D np.array)
