@@ -14,5 +14,5 @@ from .contextuality import is_contextual
 
 
 from .calc_qubnorm import (
-    JW1norm, JW1norm_nosym
+    JW1norm, JW1norm_nosym, JW1norm_spat
 )
