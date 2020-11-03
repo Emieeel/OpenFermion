@@ -30,7 +30,7 @@ def normal_order_tbc(two_body_coefficients, n_qubits):
     two_body_coefficients : A numpy array of size
         (n_qubits, n_qubits, n_qubits, n_qubits)
     '''
-    print("Normal ordering.....")
+    # print("Normal ordering.....")
     for i in range(n_qubits):
         for j in range(n_qubits):
             for k in range(n_qubits):
@@ -47,10 +47,10 @@ def normal_order_tbc(two_body_coefficients, n_qubits):
                         two_body_coefficients[i,j,l,k] = 0.
                         two_body_coefficients[j,i,k,l] = 0.
                         two_body_coefficients[j,i,l,k] = 0.
-    print("Done normal ordering")
+    # print("Done normal ordering")
     return two_body_coefficients
 
-def JW1norm(constant, one_body_coefficients, two_body_coefficients, normal_order=True):
+def JW1norm_nosym(constant, one_body_coefficients, two_body_coefficients, normal_order=True):
     '''
     Returns the 1-Norm of the Hamiltonian after a Jordan-Wigner
     transformation given normal ordered one-body (2D np.array)
@@ -144,7 +144,7 @@ def JW1norm(constant, one_body_coefficients, two_body_coefficients, normal_order
 
     return q1norm
 
-def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients_inp, normal_order=False):
+def JW1norm(constant, one_body_coefficients, two_body_coefficients_inp, normal_order=False):
     '''
     Returns the 1-Norm of the Hamiltonian after a Jordan-Wigner
     transformation given normal ordered one-body (2D np.array)
@@ -177,10 +177,8 @@ def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients_inp, norm
     htilde = constant
     for p in range(n_qubits):
         htilde += 1/2 * one_body_coefficients[p,p]
-        print(htilde)
         for q in range(n_qubits):
             if q != p:
-                # print(two_body_coefficients[p,q,q,p],two_body_coefficients[p,q,p,q])
                 htilde += 1/8 * (two_body_coefficients[p,q,q,p] - two_body_coefficients[p,q,p,q])
     
     htildepq = np.zeros(one_body_coefficients.shape)
@@ -210,7 +208,75 @@ def JW1norm_sym(constant, one_body_coefficients, two_body_coefficients_inp, norm
                     if p>q and r>s and p!=q and p!=r and p!=s and q!=r and q!=s and r!=s:
                         q1norm2 += 1/4 * abs(two_body_coefficients[p,q,r,s] - \
                                                 two_body_coefficients[p,q,s,r])
-        # print("q1norm2 is",q1norm2)
     q1norm = q1norm1 + q1norm2 + q1norm3
     return q1norm
+
+# def JW1norm_spat(constant, one_body_integrals, two_body_integrals_inp, normal_order=False):
+#     '''
+#     Returns the 1-Norm of the Hamiltonian after a Jordan-Wigner
+#     transformation given normal ordered one-body (2D np.array)
+#     and two-body (4D np.array) integrals.
+
+#     Parameters
+#     ----------
+#     constant : Nuclear repulsion or adjustment to constant shift in Hamiltonian
+#             from integrating out core orbitals
+#     one_body_integrals : An array of the one-electron integrals having
+#                 shape of (n_qubits, n_qubits).
+#     two_body_integrals : An array of the two-electron integrals having
+#                 shape of (n_qubits, n_qubits, n_qubits, n_qubits).
+#     normal_order : Boolean, optional
+#         Whether to normal order the Hamiltonian (If false, assumes that
+#         the Hamiltonian is already in normal ordered form). The default is True.
+
+#     Returns
+#     -------
+#     q1norm : 1-Norm of the Qubit Hamiltonian  
+#     '''
+#     n_qubits = one_body_integrals.shape[0]
+#     if normal_order:
+#         two_body_integrals = normal_order_tbc(two_body_integrals_inp, n_qubits)
+#     else:
+#         two_body_integrals = np.copy(two_body_integrals_inp)
+    
+
+    
+#     htilde = constant
+#     for p in range(n_qubits):
+#         htilde += 1/2 * one_body_integrals[p,p]
+#         print(htilde)
+#         for q in range(n_qubits):
+#             if q != p:
+#                 # print(two_body_integrals[p,q,q,p],two_body_integrals[p,q,p,q])
+#                 htilde += 1/8 * (two_body_integrals[p,q,q,p] - two_body_integrals[p,q,p,q])
+    
+#     htildepq = np.zeros(one_body_integrals.shape)
+#     for p in range(n_qubits):
+#         for q in range(n_qubits):
+#             htildepq[p,q] = 1/2 * one_body_integrals[p,q]
+#             for r in range(n_qubits):
+#                 if r != p and r!= q:
+#                     htildepq[p,q] += ((1/4 * two_body_integrals[p,r,r,q]) - \
+#                                       (1/4 * two_body_integrals[p,r,q,r]))
+    
+#     q1norm1 = abs(htilde) + np.sum(np.absolute(np.diag(htildepq)))
+#     q1norm3 = 0
+#     for p in range(n_qubits):
+#         for q in range(n_qubits):
+#             if p != q:
+#                 q1norm3 += abs(htildepq[p,q])
+#     q1norm2 = 0
+#     for p in range(n_qubits):
+#         for q in range(n_qubits):
+#             if p != q:
+#                 q1norm1 += 1/8 * abs(two_body_integrals[p,q,p,q]-two_body_integrals[p,q,q,p])
+#             for r in range(n_qubits):
+#                 if p != q and q!= r and p!=r:
+#                     q1norm3 += 1/4 * abs(two_body_integrals[p,r,q,r]-two_body_integrals[p,r,r,q])
+#                 for s in range(n_qubits):
+#                     if p>q and r>s and p!=q and p!=r and p!=s and q!=r and q!=s and r!=s:
+#                         q1norm2 += 1/4 * abs(two_body_integrals[p,q,r,s] - \
+#                                                 two_body_integrals[p,q,s,r])
+#     q1norm = q1norm1 + q1norm2 + q1norm3
+#     return q1norm
             
