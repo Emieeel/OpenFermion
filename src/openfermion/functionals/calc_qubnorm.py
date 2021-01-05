@@ -14,6 +14,7 @@ Function to calculate the 1-Norm of a qubit Hamiltonian after Jordan-Wigner,
 without doing the expensive Jordan-Wigner transformation.
 """
 import numpy as np
+from numba import njit
 
 def normal_order_tbc(two_body_coefficients, n_qubits):
     '''
@@ -299,7 +300,8 @@ def JW1norm_spat(constant, one_body_integrals, two_body_integrals_inp, normal_or
     q1norm = q1norm1 + q1norm2 + q1norm3
     return q1norm
 
-def JW1norm_spatfast(constant, one_body_integrals, two_body_integrals_inp, normal_order=False):
+@njit
+def JW1norm_spatfast(constant, one_body_integrals, two_body_integrals):
     '''
     Returns the 1-Norm of the Hamiltonian after a Jordan-Wigner
     transformation given normal ordered one-body (2D np.array)
@@ -322,34 +324,23 @@ def JW1norm_spatfast(constant, one_body_integrals, two_body_integrals_inp, norma
     q1norm : 1-Norm of the Qubit Hamiltonian  
     '''
     n_orb = one_body_integrals.shape[0]
-    if normal_order:
-        two_body_integrals = normal_order_tbc(
-            np.copy(two_body_integrals_inp), n_orb)
-    else:
-        two_body_integrals = np.copy(two_body_integrals_inp)
-    temp2bdyint = 2 * two_body_integrals - two_body_integrals.transpose(0,1,3,2)
-
+  
+    htilde = constant
+    for p in range(n_orb):
+        htilde += one_body_integrals[p,p]
+        # print(htilde)
+        for q in range(n_orb):
+                # print(two_body_integrals[p,q,q,p],two_body_integrals[p,q,p,q])
+                htilde += (1/2 * two_body_integrals[p,q,q,p]) -\
+                          (1/4 * two_body_integrals[p,q,p,q])
     
-    htilde = constant + np.trace(one_body_integrals) + np.einsum('ijji',(1/4)*temp2bdyint)
-    
-    
-    
-    # for p in range(n_orb):
-    #     htilde += one_body_integrals[p,p]
-    #     # print(htilde)
-    #     for q in range(n_orb):
-    #             # print(two_body_integrals[p,q,q,p],two_body_integrals[p,q,p,q])
-    #             htilde += (1/2 * two_body_integrals[p,q,q,p]) -\
-    #                       (1/4 * two_body_integrals[p,q,p,q])
-    
-    htildepq = one_body_integrals + np.einsum('ijjk',(1/2)*temp2bdyint)
-    
-    # for p in range(n_orb):
-    #     for q in range(n_orb):
-    #         htildepq[p,q] = one_body_integrals[p,q]
-    #         for r in range(n_orb):
-    #             htildepq[p,q] += ((two_body_integrals[p,r,r,q]) - \
-    #                               (1/2 * two_body_integrals[p,r,q,r]))
+    htildepq = np.zeros(one_body_integrals.shape)
+    for p in range(n_orb):
+        for q in range(n_orb):
+            htildepq[p,q] = one_body_integrals[p,q]
+            for r in range(n_orb):
+                htildepq[p,q] += ((two_body_integrals[p,r,r,q]) - \
+                                  (1/2 * two_body_integrals[p,r,q,r]))
     
     q1norm1 = abs(htilde) + np.sum(np.absolute(np.diag(htildepq)))
     q1norm3 = 0
@@ -357,11 +348,7 @@ def JW1norm_spatfast(constant, one_body_integrals, two_body_integrals_inp, norma
         for q in range(n_orb):
             if p != q:
                 q1norm3 += abs(htildepq[p,q])
-                
     q1norm2 = 0
-    temp2bdyint_2 = np.absolute(two_body_integrals - two_body_integrals.transpose(0,1,3,2))
-    q1norm1 += np.einsum('iiii',(1/4)*np.absolute(two_body_integrals)) +\
-        np.einsum('ijij',(1/4)*temp2bdyint_2) + np.einsum('ijji', two_body_integrals)
     for p in range(n_orb):
         q1norm1 += 1/4 * abs(two_body_integrals[p,p,p,p])
         for q in range(n_orb):
@@ -383,9 +370,6 @@ def JW1norm_spatfast(constant, one_body_integrals, two_body_integrals_inp, norma
                                               two_body_integrals[p,q,s,r])
                     if p!=s and q!=r:
                         q1norm2 += 1/4 * abs(two_body_integrals[p,q,r,s])
-    # print('\nq1norm1:',q1norm1)
-    # print('\nq1norm2:',q1norm2)
-    # print('\nq1norm3:',q1norm3)
     q1norm = q1norm1 + q1norm2 + q1norm3
     return q1norm
 
