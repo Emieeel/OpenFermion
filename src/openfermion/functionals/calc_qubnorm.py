@@ -321,7 +321,7 @@ def JW1norm_spatfast(constant, one_body_integrals, two_body_integrals):
 
     Returns
     -------
-    q1norm : 1-Norm of the Qubit Hamiltonian  
+    q1norm : 1-Norm of the Qubit Hamiltonian
     '''
     n_orb = one_body_integrals.shape[0]
   
