@@ -401,9 +401,7 @@ def JW1norm_new(constant, one_body_integrals, two_body_integrals):
     htilde = constant
     for p in range(n_orb):
         htilde += one_body_integrals[p,p]
-        # print(htilde)
         for q in range(n_orb):
-                # print(two_body_integrals[p,q,q,p],two_body_integrals[p,q,p,q])
                 htilde += (1/2 * two_body_integrals[p,q,q,p]) -\
                           (1/4 * two_body_integrals[p,q,p,q])
     
@@ -431,7 +429,6 @@ def JW1norm_new(constant, one_body_integrals, two_body_integrals):
                                               two_body_integrals[p,q,s,r])
                     q1norm3 += 1/4 * abs(two_body_integrals[p,q,r,s])
     q1norm = q1norm1 + q1norm2 + q1norm3
-    print("IT WORKS?!?!?!")
     return q1norm
 
 def JW1norm_ZHAO(constant, one_body_coefficients, two_body_coefficients_inp, normal_order=False):
