@@ -12,4 +12,4 @@
 
 from .contextuality import is_contextual
 
-from .get_one_norm import get_one_norm
+from .get_one_norm import get_one_norm, JW1norm_wocont, JW1norm_new
